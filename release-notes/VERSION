@@ -1,0 +1,14 @@
+Project: jackson-annotations
+Versions: 3.x (for earlier, see VERSION-2.x)
+
+Contains definitions of standard Jackson annotation definitions, as well
+as minimal set of support types (value classes created from annotations,
+mostly)
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+3.0 (not yet released)
+
+- Change `JsonInclude.value`, `JsonInclude.content` to `USE_DEFAULTS` (from `ALWAYS`)

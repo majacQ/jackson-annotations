@@ -34,8 +34,6 @@ public @interface JsonAnyGetter
      *
      * @return True if annotation is enabled (normal case); false if it is to
      *   be ignored (only useful for mix-in annotations to "mask" annotation
-     *
-     * @since 2.9
      */
     boolean enabled() default true;
 }

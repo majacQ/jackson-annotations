@@ -45,7 +45,7 @@ import java.lang.annotation.Target;
  * @see JsonKey
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD,
-    ElementType.FIELD // since 2.9
+    ElementType.FIELD
 })
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotation

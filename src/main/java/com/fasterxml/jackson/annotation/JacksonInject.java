@@ -31,14 +31,11 @@ public @interface JacksonInject
      * if disabled (`OptBoolean.FALSE`), input value (if any) will be ignored;
      * otherwise it will override injected value.
      *<p>
-     * Default is `OptBoolean.DEFAULT`, which translates to `OptBoolean.TRUE`: this is
-     * for backwards compatibility (2.8 and earlier always allow binding input value).
+     * Default is `OptBoolean.DEFAULT`, which translates to `OptBoolean.TRUE`.
      *
      * @return {@link OptBoolean#TRUE} to enable use of value from input instead of
      *    injected value, if available; {@link OptBoolean#FALSE} if injected value will
      *    always be used regardless of input.
-     *
-     * @since 2.9
      */
     public OptBoolean useInput() default OptBoolean.DEFAULT;
 
@@ -54,8 +51,6 @@ public @interface JacksonInject
     /**
      * Helper class used to contain information from a single {@link JacksonInject}
      * annotation, as well as to provide possible overrides from non-annotation sources.
-     *
-     * @since 2.9
      */
     public static class Value
         implements JacksonAnnotationValue<JacksonInject>,

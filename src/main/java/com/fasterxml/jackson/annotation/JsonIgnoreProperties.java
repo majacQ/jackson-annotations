@@ -27,7 +27,7 @@ import java.util.*;
  * per-property annotation.
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.TYPE,
-    ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
+    ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotation
 public @interface JsonIgnoreProperties
@@ -67,8 +67,6 @@ public @interface JsonIgnoreProperties
      * 
      * @return True if getters should be allowed (i.e. NOT ignored); false if getters
      *    are to be ignored
-     *
-     * @since 2.6
      */
     public boolean allowGetters() default false;
 
@@ -87,22 +85,19 @@ public @interface JsonIgnoreProperties
      *
      * @return True if setters should be allowed (i.e. NOT ignored); false if setters
      *    are to be ignored
-     * @since 2.6
      */
     public boolean allowSetters() default false;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Value class used to enclose information, allow for
     /* merging of layered configuration settings.
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
      * Helper class used to contain information from a single {@link JsonIgnoreProperties}
      * annotation, as well as to provide possible overrides from non-annotation sources.
-     *
-     * @since 2.8
      */
     public static class Value
         implements JacksonAnnotationValue<JsonIgnoreProperties>,
@@ -146,7 +141,7 @@ public @interface JsonIgnoreProperties
 
         public static Value from(JsonIgnoreProperties src) {
             if (src == null) {
-                return EMPTY; // since 2.9
+                return EMPTY;
             }
             return construct(_asSet(src.value()),
                     src.ignoreUnknown(), src.allowGetters(), src.allowSetters(),
@@ -207,9 +202,6 @@ public @interface JsonIgnoreProperties
                     : base.withOverrides(overrides);
         }
 
-        /**
-         * @since 2.8
-         */
         public static Value mergeAll(Value... values)
         {
             Value result = null;
@@ -300,11 +292,12 @@ public @interface JsonIgnoreProperties
             return _allowSetters ? this :
                 construct(_ignored, _ignoreUnknown, _allowGetters, true, _merge);
         }
+
         public Value withoutAllowSetters() {
             return !_allowSetters ? this :
                 construct(_ignored, _ignoreUnknown, _allowGetters, false, _merge);
         }
-        
+
         public Value withMerge() {
             return _merge ? this :
                 construct(_ignored, _ignoreUnknown, _allowGetters, _allowSetters, true);
@@ -314,7 +307,7 @@ public @interface JsonIgnoreProperties
             return !_merge ? this :
                 construct(_ignored, _ignoreUnknown, _allowGetters, _allowSetters, false);
         }
-        
+
         @Override
         public Class<JsonIgnoreProperties> valueFor() {
             return JsonIgnoreProperties.class;
@@ -359,7 +352,7 @@ public @interface JsonIgnoreProperties
             }
             return _ignored;
         }
-        
+
         public boolean getIgnoreUnknown() {
             return _ignoreUnknown;
         }

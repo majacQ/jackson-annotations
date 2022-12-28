@@ -32,8 +32,6 @@ public @interface JsonSubTypes {
      * When set to true, logical type name and names are going to be checked
      * for repeated values. Repeated values are considered a definition violation
      * during that check.
-     *
-     * @since 2.14
      */
     public boolean failOnRepeatedNames() default false;
 
@@ -59,8 +57,6 @@ public @interface JsonSubTypes {
         /**
          * (optional) Logical type names used as the type identifier for the class: used if
          * more than one type name should be associated with the same type.
-         *
-         * @since 2.12
          */
         public String[] names() default {};
     }

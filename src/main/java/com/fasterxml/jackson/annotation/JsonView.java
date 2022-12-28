@@ -24,8 +24,8 @@ import java.lang.annotation.Target;
  * type, unless overridden by per-property annotation.
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.FIELD,
-	    ElementType.PARAMETER, // since 2.5
-	    ElementType.TYPE // since 2.9, to indicate "default view" for properties
+	    ElementType.PARAMETER,
+	    ElementType.TYPE // to indicate "default view" for properties
 })
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotation

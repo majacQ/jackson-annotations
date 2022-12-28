@@ -52,8 +52,6 @@ public @interface JsonProperty
     /**
      * Special value that indicates that handlers should use the default
      * name (derived from method or field name) for property.
-     * 
-     * @since 2.1
      */
     public final static String USE_DEFAULT_NAME = "";
 
@@ -61,8 +59,6 @@ public @interface JsonProperty
      * Marker value used to indicate that no index has been specified.
      * Used as the default value as annotations do not allow "missing"
      * values.
-     * 
-     * @since 2.4
      */
     public final static int INDEX_UNKNOWN = -1;
     
@@ -103,8 +99,6 @@ public @interface JsonProperty
      * State of this property is exposed via introspection, and its
      * value is typically used by Schema generators, such as one for
      * JSON Schema.
-     *
-     * @since 2.0
      */
     boolean required() default false;
 
@@ -113,8 +107,6 @@ public @interface JsonProperty
      * to other properties specified for the Object). This index
      * is typically used by binary formats, but may also be useful
      * for schema languages and other tools.
-     * 
-     * @since 2.4
      */
     int index() default INDEX_UNKNOWN;
 
@@ -129,8 +121,6 @@ public @interface JsonProperty
      * It is possible that in future this annotation could be used for value
      * defaulting, and especially for default values of Creator properties,
      * since they support {@link #required()} in 2.6 and above.
-     *
-     * @since 2.5
      */
     String defaultValue() default "";
 
@@ -143,8 +133,6 @@ public @interface JsonProperty
      *<p>
      * Default value os {@link Access#AUTO} which means that access is determined
      * solely based on visibility and other annotations.
-     *
-     * @since 2.6
      */
     Access access() default Access.AUTO;
     
@@ -160,8 +148,6 @@ public @interface JsonProperty
      * has precedence over this property.
      * This annotation property is, however, preferred over use of "split"
      * {@link JsonIgnore}/<code>JsonProperty</code> combination.
-     *
-     * @since 2.6
      */
     public enum Access
     {

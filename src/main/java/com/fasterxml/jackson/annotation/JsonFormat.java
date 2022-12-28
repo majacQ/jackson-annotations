@@ -17,7 +17,7 @@ import java.util.TimeZone;
  * or String (such as ISO-8601 compatible time value) -- as well as configuring
  * exact details with {@link #pattern} property.
  *<p>
- * As of Jackson 2.6, known special handling includes:
+ * As of Jackson 3.0, known special handling includes:
  *<ul>
  * <li>{@link java.util.Date}: Shape can  be {@link Shape#STRING} or {@link Shape#NUMBER};
  *    pattern may contain {@link java.text.SimpleDateFormat}-compatible pattern definition.
@@ -42,8 +42,6 @@ import java.util.TimeZone;
  *    will not work as per-property annotation.
  *   </li>
  *</ul>
- *
- * @since 2.0
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
     ElementType.TYPE})
@@ -111,8 +109,6 @@ public @interface JsonFormat
      * Note that underlying default setting depends on datatype (or more precisely
      * deserializer for it): for most date/time types, default is for leniency
      * to be enabled.
-     * 
-     * @since 2.9
      */
     public OptBoolean lenient() default OptBoolean.DEFAULT;
 
@@ -120,8 +116,6 @@ public @interface JsonFormat
      * Set of {@link JsonFormat.Feature}s to explicitly enable with respect
      * to handling of annotated property. This will have precedence over possible
      * global configuration.
-     *
-     * @since 2.6
      */
     public JsonFormat.Feature[] with() default { };
 
@@ -129,8 +123,6 @@ public @interface JsonFormat
      * Set of {@link JsonFormat.Feature}s to explicitly disable with respect
      * to handling of annotated property. This will have precedence over possible
      * global configuration.
-     *
-     * @since 2.6
      */
     public JsonFormat.Feature[] without() default { };
 
@@ -147,40 +139,19 @@ public @interface JsonFormat
      */
     public enum Shape
     {
-        /**
-         * Marker enum value that indicates "whatever" choice, meaning that annotation
-         * does NOT specify shape to use.
-         * Note that this is different from {@link Shape#NATURAL}, which
-         * specifically instructs use of the "natural" shape for datatype.
-         */
-        ANY,
+        // // // Concrete physical shapes, scalars
 
         /**
-         * Marker enum value that indicates the "default" choice for given datatype;
-         * for example, JSON String for {@link java.lang.String}, or JSON Number
-         * for Java numbers.
-         * Note that this is different from {@link Shape#ANY} in that this is actual
-         * explicit choice that overrides possible default settings.
-         *
-         * @since 2.8
+         * Value that indicates that Binary type (native, if format supports it;
+         * encoding using Base64 if only textual types supported) should be used.
          */
-        NATURAL,
-        
-        /**
-         * Value that indicates shape should not be structural (that is, not
-         * {@link #ARRAY} or {@link #OBJECT}), but can be any other shape.
-         */
-        SCALAR,
+        BINARY,
 
         /**
-         * Value that indicates that (JSON) Array type should be used.
+         * Value that indicates that (JSON) boolean type
+         * (true, false) should be used.
          */
-        ARRAY,
-        
-        /**
-         * Value that indicates that (JSON) Object type should be used.
-         */
-        OBJECT,
+        BOOLEAN,
 
         /**
          * Value that indicates that a numeric (JSON) type should be used
@@ -204,28 +175,70 @@ public @interface JsonFormat
          * Value that indicates that (JSON) String type should be used.
          */
         STRING,
-        
-        /**
-         * Value that indicates that (JSON) boolean type
-         * (true, false) should be used.
-         */
-        BOOLEAN,
 
         /**
-         * Value that indicates that Binary type (native, if format supports it;
-         * encoding using Base64 if only textual types supported) should be used.
-         *
-         * @since 2.10
+         * Value that indicates shape should not be structural (that is, not
+         * {@link #ARRAY} or {@link #OBJECT}, but can be any other shape.
          */
-        BINARY
+        SCALAR,
+        
+        // // // Concrete physical shapes, structured
+
+        /**
+         * Value that indicates that (JSON) Array type should be used.
+         */
+        ARRAY,
+
+        /**
+         * Value that indicates that (JSON) Object type should be used.
+         */
+        OBJECT,
+
+        // // // Additional logical meta-types
+
+        /**
+         * Marker enum value that indicates "whatever" choice, meaning that annotation
+         * does NOT specify shape to use.
+         * Note that this is different from {@link Shape#NATURAL}, which
+         * specifically instructs use of the "natural" shape for datatype.
+         */
+        ANY,
+
+        /**
+         * Marker enum value that indicates the "default" choice for given datatype;
+         * for example, JSON String for {@link java.lang.String}, or JSON Number
+         * for Java numbers.
+         * Note that this is different from {@link Shape#ANY} in that this is actual
+         * explicit choice that overrides possible default settings.
+         */
+        NATURAL,
+
+        /**
+         * Marker enum value that indicates not only shape of {@link #OBJECT} but further
+         * handling as POJO, where applicable. Mostly makes difference at Java Object level
+         * when distinguishing handling between {@link java.util.Map} and POJO types.
+         *
+         * @since 3.0
+         */
+        POJO,
         ;
 
         public boolean isNumeric() {
             return (this == NUMBER) || (this == NUMBER_INT) || (this == NUMBER_FLOAT);
         }
 
+        /** @since 3.0 */
+        public static boolean isNumeric(Shape shapeOrNull) {
+            return (shapeOrNull != null) && shapeOrNull.isNumeric();
+        }
+
         public boolean isStructured() {
-            return (this == OBJECT) || (this == ARRAY);
+            return (this == OBJECT) || (this == ARRAY) || (this == POJO);
+        }
+
+        /** @since 3.0 */
+        public static boolean isStructured(Shape shapeOrNull) {
+            return (shapeOrNull != null) && shapeOrNull.isStructured();
         }
     }
 
@@ -239,8 +252,6 @@ public @interface JsonFormat
      * takes the format setting into account. If not, please file an issue
      * for adding support via issue tracker for package that has handlers
      * (if you know which one; if not, just use `jackson-databind`).
-     *
-     * @since 2.6
      */
     public enum Feature {
         /**
@@ -266,8 +277,6 @@ public @interface JsonFormat
          * which allows case-sensitive matching of (some) property values, such
          * as {@code Enum}s.
          * Only affects deserialization, has no effect on serialization.
-         * 
-         * @since 2.10
          */
         ACCEPT_CASE_INSENSITIVE_VALUES,
 
@@ -307,8 +316,6 @@ public @interface JsonFormat
          * {@link java.util.Date} and {@link java.util.Calendar}), this setting is only
          * applicable to <code>Joda</code> and <code>Java 8 date/time</code> values,
          * but not to <code>java.util.Date</code> or <code>java.util.Calendar</code>.
-         *
-         * @since 2.8
          */
         ADJUST_DATES_TO_CONTEXT_TIME_ZONE
     }
@@ -316,8 +323,6 @@ public @interface JsonFormat
     /**
      * Helper class that encapsulates information equivalent to {@link java.lang.Boolean}
      * valued {@link java.util.EnumMap}.
-     *
-     * @since 2.6
      */
     public static class Features
     {
@@ -431,7 +436,7 @@ public @interface JsonFormat
      * annotation.
      */
     public static class Value
-        implements JacksonAnnotationValue<JsonFormat>, // since 2.6
+        implements JacksonAnnotationValue<JsonFormat>,
             java.io.Serializable
     {
         private static final long serialVersionUID = 1L;
@@ -444,14 +449,8 @@ public @interface JsonFormat
 
         private final String _timezoneStr;
 
-        /**
-         * @since 2.9
-         */
         private final Boolean _lenient;
 
-        /**
-         * @since 2.6
-         */
         private final Features _features;
 
         // lazily constructed when created from annotations
@@ -466,9 +465,6 @@ public @interface JsonFormat
                     Features.construct(ann), ann.lenient().asBoolean());
         }
 
-        /**
-         * @since 2.9
-         */
         public Value(String p, Shape sh, String localeStr, String tzStr, Features f,
                 Boolean lenient)
         {
@@ -480,9 +476,6 @@ public @interface JsonFormat
                     null, f, lenient);
         }
 
-        /**
-         * @since 2.9
-         */
         public Value(String p, Shape sh, Locale l, TimeZone tz, Features f,
                 Boolean lenient)
         {
@@ -495,9 +488,6 @@ public @interface JsonFormat
             _lenient = lenient;
         }
 
-        /**
-         * @since 2.9
-         */
         public Value(String p, Shape sh, Locale l, String tzStr, TimeZone tz, Features f,
                 Boolean lenient)
         {
@@ -510,23 +500,6 @@ public @interface JsonFormat
             _lenient = lenient;
         }
 
-        @Deprecated // since 2.9
-        public Value(String p, Shape sh, Locale l, String tzStr, TimeZone tz, Features f) {
-            this(p, sh, l, tzStr, tz, f, null);
-        }
-        
-        @Deprecated // since 2.9
-        public Value(String p, Shape sh, String localeStr, String tzStr, Features f) {
-            this(p, sh, localeStr, tzStr, f, null);
-        }
-        @Deprecated // since 2.9
-        public Value(String p, Shape sh, Locale l, TimeZone tz, Features f) {
-            this(p, sh, l, tz, f, null);
-        }
-        
-        /**
-         * @since 2.7
-         */
         public final static Value empty() {
             return EMPTY;
         }
@@ -539,8 +512,6 @@ public @interface JsonFormat
          * or logically missing).
          * Note that one or both of value instances may be `null`, directly;
          * if both are `null`, result will also be `null`; otherwise never null.
-         *
-         * @since 2.8
          */
         public static Value merge(Value base, Value overrides)
         {
@@ -548,9 +519,6 @@ public @interface JsonFormat
                     : base.withOverrides(overrides);
         }
 
-        /**
-         * @since 2.8
-         */
         public static Value mergeAll(Value... values)
         {
             Value result = null;
@@ -562,16 +530,10 @@ public @interface JsonFormat
             return result;
         }
 
-        /**
-         * @since 2.7
-         */
         public final static Value from(JsonFormat ann) {
             return (ann == null) ? EMPTY : new Value(ann);
         }
 
-        /**
-         * @since 2.7
-         */
         public final Value withOverrides(Value overrides) {
             if ((overrides == null) || (overrides == EMPTY) || (overrides == this)) {
                 return this;
@@ -615,39 +577,24 @@ public @interface JsonFormat
             return new Value(p, sh, l, tzStr, tz, f, lenient);
         }
 
-        /**
-         * @since 2.6
-         */
         public static Value forPattern(String p) {
             return new Value(p, null, null, null, null, Features.empty(), null);
         }
 
-        /**
-         * @since 2.7
-         */
         public static Value forShape(Shape sh) {
             return new Value("", sh, null, null, null, Features.empty(), null);
         }
 
-        /**
-         * @since 2.9
-         */
         public static Value forLeniency(boolean lenient) {
             return new Value("", null, null, null, null, Features.empty(),
                     Boolean.valueOf(lenient));
         }
 
-        /**
-         * @since 2.1
-         */
         public Value withPattern(String p) {
             return new Value(p, _shape, _locale, _timezoneStr, _timezone,
                     _features, _lenient);
         }
 
-        /**
-         * @since 2.1
-         */
         public Value withShape(Shape s) {
             if (s == _shape) {
                 return this;
@@ -656,25 +603,16 @@ public @interface JsonFormat
                     _features, _lenient);
         }
 
-        /**
-         * @since 2.1
-         */
         public Value withLocale(Locale l) {
             return new Value(_pattern, _shape, l, _timezoneStr, _timezone,
                     _features, _lenient);
         }
 
-        /**
-         * @since 2.1
-         */
         public Value withTimeZone(TimeZone tz) {
             return new Value(_pattern, _shape, _locale, null, tz,
                     _features, _lenient);
         }
 
-        /**
-         * @since 2.9
-         */
         public Value withLenient(Boolean lenient) {
             if (lenient == _lenient) {
                 return this;
@@ -683,9 +621,6 @@ public @interface JsonFormat
                     _features, lenient);
         }
 
-        /**
-         * @since 2.6
-         */
         public Value withFeature(JsonFormat.Feature f) {
             Features newFeats = _features.with(f);
             return (newFeats == _features) ? this :
@@ -693,9 +628,6 @@ public @interface JsonFormat
                         newFeats, _lenient);
         }
 
-        /**
-         * @since 2.6
-         */
         public Value withoutFeature(JsonFormat.Feature f) {
             Features newFeats = _features.without(f);
             return (newFeats == _features) ? this :
@@ -716,8 +648,6 @@ public @interface JsonFormat
          * @return {@code Boolean.TRUE} if explicitly set to true; {@code Boolean.FALSE}
          *   if explicit set to false; or {@code null} if not set either way (assuming
          *   "default leniency" for the context)
-         *
-         * @since 2.9
          */
         public Boolean getLenient() {
             return _lenient;
@@ -730,8 +660,6 @@ public @interface JsonFormat
          *</pre>
          * that is, returns {@code true} if (and only if) leniency has been explicitly
          * set to {code true}; but not if it is undefined.
-         *
-         * @since 2.9
          */
         public boolean isLenient() {
             return Boolean.TRUE.equals(_lenient);
@@ -741,8 +669,6 @@ public @interface JsonFormat
          * Alternate access (compared to {@link #getTimeZone()}) which is useful
          * when caller just wants time zone id to convert, but not as JDK
          * provided {@link TimeZone}
-         * 
-         * @since 2.4
          */
         public String timeZoneAsString() {
             if (_timezone != null) {
@@ -763,26 +689,14 @@ public @interface JsonFormat
             return tz;
         }
 
-        /**
-         * @since 2.4
-         */
         public boolean hasShape() { return _shape != Shape.ANY; }
-        
-        /**
-         * @since 2.4
-         */
+
         public boolean hasPattern() {
             return (_pattern != null) && (_pattern.length() > 0);
         }
-        
-        /**
-         * @since 2.4
-         */
+
         public boolean hasLocale() { return _locale != null; }
 
-        /**
-         * @since 2.4
-         */
         public boolean hasTimeZone() {
             return (_timezone != null) || (_timezoneStr != null && !_timezoneStr.isEmpty());
         }
@@ -791,8 +705,6 @@ public @interface JsonFormat
          * Accessor for checking whether there is a setting for leniency.
          * NOTE: does NOT mean that `lenient` is `true` necessarily; just that
          * it has been set.
-         *
-         * @since 2.9
          */
         public boolean hasLenient() {
             return _lenient != null;
@@ -804,8 +716,6 @@ public @interface JsonFormat
          * {@link Boolean#FALSE}, indicating 'yes/no/dunno' choices, where `null` ("dunno")
          * indicates that the default handling should be used based on global defaults,
          * and there is no format override.
-         *
-         * @since 2.6
          */
         public Boolean getFeature(JsonFormat.Feature f) {
             return _features.get(f);
@@ -813,8 +723,6 @@ public @interface JsonFormat
 
         /**
          * Accessor for getting full set of features enabled/disabled.
-         *
-         * @since 2.8
          */
         public Features getFeatures() {
             return _features;

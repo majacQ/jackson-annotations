@@ -1,5 +1,6 @@
 language: java
 
+# Java 8 for Jackson 3:
 jdk:
   - openjdk8
   - openjdk11

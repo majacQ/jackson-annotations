@@ -12,14 +12,14 @@ import java.lang.annotation.Target;
  * to set) or a field (of type {@link java.util.Map} or POJO) -
  * to be used as a "fallback" handler
  * for all otherwise unrecognized properties found from JSON content.
- * It is similar to {@code javax.xml.bind.annotation.XmlAnyElement}
+ * It is similar to JAXB {@code javax.xml.bind.annotation.XmlAnyElement} annotation
  * in behavior; and can only be used to denote a single property
  * per type.
  *<p>
  * If used, all otherwise unmapped key-value pairs from JSON Object values
  * are added using mutator.
  *<p>
- * NOTE: ability to annotated fields was added in version 2.8; earlier only
+ * NOTE: ability to annotate fields was added in version 2.8; previously, only
  * methods could be annotated.
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.FIELD})
@@ -37,8 +37,6 @@ public @interface JsonAnySetter
      * 
      * @return True if annotation is enabled (normal case); false if it is to
      *   be ignored (only useful for mix-in annotations to "mask" annotation)
-     *
-     * @since 2.9
      */
     boolean enabled() default true;
 }

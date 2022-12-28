@@ -56,7 +56,11 @@ No changes since 2.14
 
 2.9.1 (07-Sep-2017)
 
-#123: Add Automatic-Module-Name (`com.fasterxml.jackson.annotation`) for JDK9 interoperability
+#123: Add Automatic-Module-Name (`com.fasterxml.jackson.annotation`) for
+  JDK9 interoperability
+#124: Add new `PropertyAccessor` `SCALAR_CONSTRUCTOR`; `JsonAutoDetect.scalarConstructorVisibility
+#129: Remove Target of `ElementType.CONSTRUCTOR` from `@JsonIgnoreProperties`,
+  `@JsonPropertyOrder`
 
 2.9.0 (30-Jul-2017)
 
